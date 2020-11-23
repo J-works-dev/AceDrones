@@ -1,0 +1,10 @@
+C:\Users\30024165\source\repos\AceDrones\AceDrones\obj\Debug\AceDrones.csprojAssemblyReference.cache
+C:\Users\30024165\source\repos\AceDrones\AceDrones\obj\Debug\AceDrones.FormAceDrones.resources
+C:\Users\30024165\source\repos\AceDrones\AceDrones\obj\Debug\AceDrones.Properties.Resources.resources
+C:\Users\30024165\source\repos\AceDrones\AceDrones\obj\Debug\AceDrones.csproj.GenerateResource.cache
+C:\Users\30024165\source\repos\AceDrones\AceDrones\obj\Debug\AceDrones.csproj.CoreCompileInputs.cache
+C:\Users\30024165\source\repos\AceDrones\AceDrones\bin\Debug\AceDrones.exe.config
+C:\Users\30024165\source\repos\AceDrones\AceDrones\bin\Debug\AceDrones.exe
+C:\Users\30024165\source\repos\AceDrones\AceDrones\bin\Debug\AceDrones.pdb
+C:\Users\30024165\source\repos\AceDrones\AceDrones\obj\Debug\AceDrones.exe
+C:\Users\30024165\source\repos\AceDrones\AceDrones\obj\Debug\AceDrones.pdb
