@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,8 @@ namespace AceDrones
 {
     class Customer
     {
-        private string customerID;
+        private int customerID;
+        static int staticID = 900;
         private string name;
         private string city;
         private string country;
@@ -19,43 +20,38 @@ namespace AceDrones
         }
 
         // Constructor for No data input
-        public Customer(string cId, string n, string c, string co)
+        public Customer(int cId, string n, string c, string co)
         {
-            if (string.IsNullOrEmpty(cId))
+            
+            if (string.IsNullOrEmpty(n) && string.IsNullOrEmpty(c) && string.IsNullOrEmpty(co))
             {
-                customerID = "C999";
-            }
-            else
-            {
-                customerID = cId;
-            }
-            if (string.IsNullOrEmpty(n))
-            {
+                customerID = 999;
                 name = "unknown";
-            }
-            else
-            {
-                name = n;
-            }
-            if (string.IsNullOrEmpty(c))
-            {
                 city = "unknown";
-            }
-            else
-            {
-                city = c;
-            }
-            if (string.IsNullOrEmpty(co))
-            {
                 country = "unknown";
             }
             else
             {
+                if (cId == 0)
+                {
+                    customerID = staticID;
+                    staticID++;
+                }
+                else
+                {
+                    customerID = cId;
+                    if (!(cId == 0))
+                    {
+                        staticID++;
+                    }
+                }
+                name = n;
+                city = c;
                 country = co;
             }
         }
 
-        public string CustomerID { get => customerID; set => customerID = value; }
+        public int CustomerID { get => customerID; set => customerID = value; }
         public string Name { get => name; set => name = value; }
         public string City { get => city; set => city = value; }
         public string Country { get => country; set => country = value; }
