@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,13 +8,14 @@ namespace AceDrones
 {
     class Drone
     {
-        private string serialNumber;
+        private int serialNumber;
+        static int staticSN = 100;
         private string model;
         private string engineConfiguration;
         private string range;
         private string accessories;
-        private string price;
-        private string purchaseDate;
+        private int price;
+        private DateTime purchaseDate = new DateTime();
 
         public Drone()
         {
@@ -22,9 +23,18 @@ namespace AceDrones
         }
 
         // Constructor
-        public Drone(string s, string m, string e, string r, string a, string p, string d)
+        public Drone(int s, string m, string e, string r, string a, int p, DateTime d)
         {
-            serialNumber = s;
+            if (s == 0)
+            {
+                serialNumber = staticSN;
+                staticSN += 10;
+            }
+            else
+            {
+                serialNumber = s;
+                staticSN += 10;
+            }
             model = m;
             engineConfiguration = e;
             range = r;
@@ -33,12 +43,12 @@ namespace AceDrones
             purchaseDate = d;
         }
 
-        public string SerialNumber { get => serialNumber; set => serialNumber = value; }
+        public int SerialNumber { get => serialNumber; set => serialNumber = value; }
         public string Model { get => model; set => model = value; }
         public string EngineConfiguration { get => engineConfiguration; set => engineConfiguration = value; }
         public string Range { get => range; set => range = value; }
         public string Accessories { get => accessories; set => accessories = value; }
-        public string Price { get => price; set => price = value; }
-        public string PurchaseDate { get => purchaseDate; set => purchaseDate = value; }
+        public int Price { get => price; set => price = value; }
+        public DateTime PurchaseDate { get => purchaseDate; set => purchaseDate = value; }
     }
 }
