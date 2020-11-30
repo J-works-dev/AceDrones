@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
+using System.Globalization;
 
 namespace AceDrones
 {
@@ -12,7 +14,8 @@ namespace AceDrones
         static int max = 20; // Max array size
         Drone[] drones = new Drone[max];
         Customer[] customers = new Customer[max];
-        string[,] transactions = new string[max, 3];
+        int[,] transactions = new int[max, 3];
+        static int transID = 400;
         // File names
         string droneFileName = "drones.dat";
         string customerFileName = "customers.dat";
@@ -54,30 +57,41 @@ namespace AceDrones
         // #4 Add Drome Method
         private void buttonAddDrone_Click(object sender, EventArgs e)
         {
-            if (droneCounter < max) // check array capacity
+            try
             {
-                if (!(string.IsNullOrEmpty(textBoxSerialNum.Text)) &&
-                    !(string.IsNullOrEmpty(textBoxModel.Text)) &&
-                    !(string.IsNullOrEmpty(textBoxEngConfig.Text)) &&
-                    !(string.IsNullOrEmpty(textBoxRange.Text)) &&
-                    !(string.IsNullOrEmpty(textBoxAccessories.Text)) &&
-                    !(string.IsNullOrEmpty(textBoxPrice.Text)) &&
-                    !(string.IsNullOrEmpty(textBoxDate.Text)))
+                if (droneCounter < max) // check array capacity
                 {
-                    drones[droneCounter] = new Drone(textBoxSerialNum.Text, textBoxModel.Text, textBoxEngConfig.Text, textBoxRange.Text, textBoxAccessories.Text, textBoxPrice.Text, textBoxDate.Text);
-                    droneCounter++;
+                    if (!(string.IsNullOrEmpty(textBoxModel.Text)) &&
+                        !(string.IsNullOrEmpty(textBoxEngConfig.Text)) &&
+                        !(string.IsNullOrEmpty(textBoxRange.Text)) &&
+                        !(string.IsNullOrEmpty(textBoxAccessories.Text)) &&
+                        !(string.IsNullOrEmpty(textBoxPrice.Text)) &&
+                        !(string.IsNullOrEmpty(textBoxDate.Text)))
+                    {
+                        var ci = new CultureInfo("en-AU");
+                        var formats = new[] { "M-d-yyyy", "dd-MM-yyyy", "MM-dd-yyyy", "M.d.yyyy", "dd.MM.yyyy", "MM.dd.yyyy" }
+                                .Union(ci.DateTimeFormat.GetAllDateTimePatterns()).ToArray();
+
+                        //DateTime.ParseExact(textBoxDate.Text, formats, ci, DateTimeStyles.AssumeLocal);
+
+                        drones[droneCounter] = new Drone(0, textBoxModel.Text, textBoxEngConfig.Text, textBoxRange.Text, textBoxAccessories.Text, int.Parse(textBoxPrice.Text), DateTime.ParseExact(textBoxDate.Text, formats, ci, DateTimeStyles.AssumeLocal));
+                        droneCounter++;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Data is incorrect or missing");
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("Data is incorrect or missing");
+                    MessageBox.Show("Your array is full");
                 }
-            }
-            else
+                clearBoxes(); // Method to clrear TextBox
+                displayDrones(); // Method to display Drone array in the listBox
+            } catch (Exception ex)
             {
-                MessageBox.Show("Your array is full");
+                MessageBox.Show("Invalide input, Price - integer, Date - dd/mm/yyyy");
             }
-            clearBoxes(); // Method to clrear TextBox
-            displayDrones(); // Method to display Drone array in the listBox
         }
 
         // #5 Add Customer Method
@@ -85,12 +99,11 @@ namespace AceDrones
         {
             if (customerCounter < max) // check array capacity
             {
-                if (!(string.IsNullOrEmpty(textBoxCustomerID.Text)) &&
-                    !(string.IsNullOrEmpty(textBoxName.Text)) &&
+                if (!(string.IsNullOrEmpty(textBoxName.Text)) &&
                     !(string.IsNullOrEmpty(textBoxCity.Text)) &&
                     !(string.IsNullOrEmpty(textBoxCountry.Text)))
                 {
-                    customers[customerCounter] = new Customer(textBoxCustomerID.Text, textBoxName.Text, textBoxCity.Text, textBoxCountry.Text);
+                    customers[customerCounter] = new Customer(0, textBoxName.Text, textBoxCity.Text, textBoxCountry.Text);
                     customerCounter++;
                 }
                 else
@@ -98,7 +111,7 @@ namespace AceDrones
                     DialogResult dialogResult = MessageBox.Show("Do you want to generate a default customer?", "Creat default", MessageBoxButtons.YesNo);
                     if (dialogResult == DialogResult.Yes)
                     {
-                        customers[customerCounter] = new Customer(textBoxCustomerID.Text, textBoxName.Text, textBoxCity.Text, textBoxCountry.Text);
+                        customers[customerCounter] = new Customer(0, textBoxName.Text, textBoxCity.Text, textBoxCountry.Text);
                         customerCounter++;
                     }
                     else if (dialogResult == DialogResult.No)
@@ -120,13 +133,14 @@ namespace AceDrones
         {
             if (transCounter < max) // check array capacity
             {
-                if (!(string.IsNullOrEmpty(textBoxTransID.Text)) &&
-                    !(string.IsNullOrEmpty(textBoxCustID.Text)) &&
+                if (!(string.IsNullOrEmpty(textBoxCustID.Text)) &&
                     !(string.IsNullOrEmpty(textBoxSerialNumber.Text)))
                 {
-                    transactions[transCounter, 0] = textBoxTransID.Text;
-                    transactions[transCounter, 1] = textBoxCustID.Text;
-                    transactions[transCounter, 2] = textBoxSerialNumber.Text;
+                    transactions[transCounter, 0] = transID++;
+                    //string numCid = string.Join(string.Empty, Regex.Matches(subjectString, @"\d+").OfType<Match>().Select(m => m.Value));
+
+                    transactions[transCounter, 1] = int.Parse(string.Join("", (textBoxCustID.Text).ToCharArray().Where(Char.IsDigit)));
+                    transactions[transCounter, 2] = int.Parse(string.Join("", (textBoxSerialNumber.Text).ToCharArray().Where(Char.IsDigit)));
                     transCounter++;
                 }
                 else
@@ -145,7 +159,11 @@ namespace AceDrones
         // #12 Save all Arrays to the file
         private void FormAceDrones_FormClosing(object sender, FormClosingEventArgs e)
         {
-            saveData();
+            DialogResult dialogResult = MessageBox.Show("Do you want to save data?", "Data Saving", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                saveData();
+            }
         }
         // Method for display Drones
         private void displayDrones()
@@ -212,14 +230,14 @@ namespace AceDrones
             for (int i = 0; i < customerCounter; i++)
             {
                 Customer displayCustomer = customers[i];
-                listBoxCustomers.Items.Add($"{displayCustomer.CustomerID} {displayCustomer.Name} {displayCustomer.City} {displayCustomer.Country}");
+                listBoxCustomers.Items.Add($"C{displayCustomer.CustomerID} {displayCustomer.Name} {displayCustomer.City} {displayCustomer.Country}");
             }
         }
         // Method for display Transactions
         private void displayTransactions()
         {
-            string temp;
-            if (transactions[0, 0] == null)
+            int temp;
+            if (transactions[0, 0] == 0)
             {
                 return;
             }
@@ -247,7 +265,7 @@ namespace AceDrones
             listBoxTransaction.Items.Clear();
             for (int i = 0; i < transCounter; i++)
             {
-                listBoxTransaction.Items.Add($"{transactions[i, 0]}\t{transactions[i, 1]}\t{transactions[i, 2]}");
+                listBoxTransaction.Items.Add($"T{transactions[i, 0]}\t{transactions[i, 1]}\t{transactions[i, 2]}");
             }
         }
         // Method to clear textboxes
@@ -290,7 +308,7 @@ namespace AceDrones
                                 switch (row)
                                 {
                                     case 0:
-                                        drones[droneCounter].SerialNumber = word;
+                                        drones[droneCounter].SerialNumber = int.Parse(word);
                                         row++;
                                         break;
                                     case 1:
@@ -310,11 +328,11 @@ namespace AceDrones
                                         row++;
                                         break;
                                     case 5:
-                                        drones[droneCounter].Price = word;
+                                        drones[droneCounter].Price = int.Parse(word);
                                         row++;
                                         break;
                                     case 6:
-                                        drones[droneCounter].PurchaseDate = word;
+                                        drones[droneCounter].PurchaseDate = DateTime.Parse(word);
                                         row++;
                                         droneCounter++;
                                         drones[droneCounter] = new Drone();
@@ -352,7 +370,7 @@ namespace AceDrones
                                 switch (row)
                                 {
                                     case 0:
-                                        customers[customerCounter].CustomerID = word;
+                                        customers[customerCounter].CustomerID = int.Parse(word);
                                         row++;
                                         break;
                                     case 1:
@@ -398,7 +416,7 @@ namespace AceDrones
                             if (row < 3)
                             {
                                 string word = bin.Deserialize(stream).ToString();
-                                transactions[col, row] = word;
+                                transactions[col, row] = int.Parse(word);
                                 row++;
                             }
                             else
@@ -540,9 +558,9 @@ namespace AceDrones
         {
             int lowBound = 0;
             int highBound = droneCounter;
-            string target;
+            int target;
             bool found = false;
-            target = textBoxSerialNum.Text;
+            target = int.Parse(string.Join("", (textBoxSerialNum.Text).ToCharArray().Where(Char.IsDigit)));
 
             while (lowBound <= highBound)
             {
@@ -553,14 +571,14 @@ namespace AceDrones
                 if (cmpVal == 0)
                 {
                     // Target has been found
-                    textBoxSerialNum.Text = drones[mid].SerialNumber;
-                    textBoxSerialNumber.Text = drones[mid].SerialNumber;
+                    textBoxSerialNum.Text = drones[mid].SerialNumber.ToString();
+                    textBoxSerialNumber.Text = drones[mid].SerialNumber.ToString();
                     textBoxModel.Text = drones[mid].Model;
                     textBoxEngConfig.Text = drones[mid].EngineConfiguration;
                     textBoxRange.Text = drones[mid].Range;
                     textBoxAccessories.Text = drones[mid].Accessories;
-                    textBoxPrice.Text = drones[mid].Price;
-                    textBoxDate.Text = drones[mid].PurchaseDate;
+                    textBoxPrice.Text = drones[mid].Price.ToString();
+                    textBoxDate.Text = drones[mid].PurchaseDate.ToShortDateString();
                     found = true;
                     return;
                 }
@@ -583,9 +601,9 @@ namespace AceDrones
         {
             int lowBound = 0;
             int highBound = customerCounter;
-            string target;
+            int target;
             bool found = false;
-            target = textBoxCustomerID.Text;
+            target = int.Parse(string.Join("", (textBoxCustomerID.Text).ToCharArray().Where(Char.IsDigit)));
 
             while (lowBound <= highBound)
             {
@@ -596,8 +614,8 @@ namespace AceDrones
                 if (cmpVal == 0)
                 {
                     // Target has been found
-                    textBoxCustomerID.Text = customers[mid].CustomerID;
-                    textBoxCustID.Text = customers[mid].CustomerID;
+                    textBoxCustomerID.Text = "C" + customers[mid].CustomerID.ToString();
+                    textBoxCustID.Text = "C" + customers[mid].CustomerID.ToString();
                     textBoxName.Text = customers[mid].Name;
                     textBoxCity.Text = customers[mid].City;
                     textBoxCountry.Text = customers[mid].Country;
@@ -623,9 +641,9 @@ namespace AceDrones
         {
             int lowBound = 0;
             int highBound = transCounter;
-            string target;
+            int target;
             bool found = false;
-            target = textBoxTransID.Text;
+            target = int.Parse(string.Join("", (textBoxTransID.Text).ToCharArray().Where(Char.IsDigit)));
 
             while (lowBound <= highBound)
             {
@@ -636,12 +654,12 @@ namespace AceDrones
                 if (cmpVal == 0)
                 {
                     // Target has been found
-                    textBoxTransID.Text = transactions[mid, 0];
-                    textBoxCustID.Text = transactions[mid, 1];
-                    textBoxCustomerID.Text = transactions[mid, 1];
+                    textBoxTransID.Text = "T" + transactions[mid, 0].ToString();
+                    textBoxCustID.Text = "C" + transactions[mid, 1].ToString();
+                    textBoxCustomerID.Text = "C" + transactions[mid, 1].ToString();
                     c_binarySearch();
-                    textBoxSerialNumber.Text = transactions[mid, 2];
-                    textBoxSerialNum.Text = transactions[mid, 2];
+                    textBoxSerialNumber.Text = transactions[mid, 2].ToString();
+                    textBoxSerialNum.Text = transactions[mid, 2].ToString();
                     d_binarySearch();
                     found = true;
                     return;
